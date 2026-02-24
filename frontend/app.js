@@ -29,3 +29,33 @@ async function fetchPosts() {
     list.appendChild(li);
   });
 }
+async function createUser() {
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+
+  await fetch(`${BASE_URL}/users`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ name, email })
+  });
+
+  fetchUsers(); // refresh list
+}
+
+async function createPost() {
+  const title = document.getElementById("title").value;
+  const content = document.getElementById("content").value;
+  const userId = document.getElementById("userId").value;
+
+  await fetch(`${BASE_URL}/posts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ title, content, userId })
+  });
+
+  fetchPosts(); // refresh list
+}
