@@ -6,4 +6,4 @@ const postSchema = new mongoose.Schema({
   userId: String
 });
 
-module.exports = mongoose.model('Post', postSchema);
+module.exports = mongoose.model('Post', postSchema); // require , new mongoose.schema , export 
