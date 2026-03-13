@@ -1,152 +1,276 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <title>Social Media App</title>
+  <meta charset="UTF-8">
+  <title>Social Media Architecture Demo</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f9;
-      margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
-      color: #333;
-    }
-
-    .container {
-      display: flex;
-      gap: 40px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      width: 400px;
-    }
-
-    input {
-      display: block;
-      width: 100%;
-      padding: 8px;
-      margin: 8px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      padding: 8px 12px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    li {
-      padding: 6px;
-      border-bottom: 1px solid #ddd;
-    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f5; margin: 0; padding: 20px; color: #333; }
+    h1 { text-align: center; color: #2c3e50; }
+    .auth-container { max-width: 400px; margin: 0 auto 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .grid { display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .card h2 { margin-top: 0; color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+    input { width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    button { width: 100%; padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.3s; margin-bottom: 10px; }
+    button:hover { background: #2980b9; }
+    .feed-btn { background: #27ae60; margin-top: 10px; font-size: 1.1em; padding: 15px;}
+    .feed-btn:hover { background: #219653; }
+    ul { list-style: none; padding: 0; max-height: 400px; overflow-y: auto; }
+    li { background: #f9f9f9; padding: 15px; margin-bottom: 10px; border-left: 4px solid #3498db; border-radius: 4px; word-wrap: break-word;}
+    .comment { font-size: 0.9em; color: #555; margin-top: 8px; border-left: 3px solid #bdc3c7; padding-left: 10px; background: #fff; padding: 8px;}
+    .error { color: #e74c3c; font-size: 0.9em; margin-bottom: 10px; font-weight: bold;}
+    #token-display { word-break: break-all; font-size: 0.8em; color: #7f8c8d; background:#ecf0f1; padding: 10px; border-radius: 4px; margin-bottom: 20px;}
+    .small-btn { padding: 5px; width: auto; font-size: 0.8em; margin-bottom: 0;}
+    .comment-input-area { display: flex; gap: 5px; margin-top: 10px; }
+    .comment-input-area input { margin-bottom: 0; padding: 6px; }
   </style>
 </head>
 <body>
 
-<h1>Social Media Microservices</h1>
+<h1>🌐 Projet Social Media - Démo Microservices</h1>
 
-<div class="container">
+<div class="auth-container" id="auth-section">
+  <h2>🔒 Authentification API Gateway</h2>
+  <p style="font-size: 0.9em; color: #666;">Tous les appels (sauf création User) sont protégés par l'API Gateway.</p>
+  <div id="login-error" class="error"></div>
+  <input type="email" id="loginEmail" placeholder="Entrez un email (ex: test@test.com)">
+  <button onclick="login()">Obtenir le Token (Se Connecter)</button>
+</div>
 
+<div id="app-section" style="display: none; max-width: 1200px; margin: 0 auto; text-align: center;">
+    <div><strong>Token JWT Actif : </strong><br> <div id="token-display"></div></div>
+</div>
+
+<div class="grid" id="main-grid">
+
+  <!-- Users Service -->
   <div class="card">
-    <h2>Users</h2>
-
-    <input type="text" id="name" placeholder="Name">
-    <input type="email" id="email" placeholder="Email">
-    <button onclick="createUser()">Create User</button>
-
-    <button onclick="fetchUsers()">Load Users</button>
+    <h2>👤 User Service</h2>
+    <div style="background:#f1f2f6; padding:10px; border-radius:5px; margin-bottom:15px; font-size:0.9em;">
+        <i>Non protégé par le Gateway. Permet de créer les identités de base.</i>
+    </div>
+    <input type="text" id="name" placeholder="Nom de l'utilisateur">
+    <input type="email" id="email" placeholder="Email de l'utilisateur">
+    <button onclick="createUser()">Créer Utilisateur</button>
+    <button onclick="fetchUsers()" style="background:#95a5a6;">Rafraîchir Utilisateurs</button>
     <ul id="users"></ul>
   </div>
 
+  <!-- Posts Service -->
   <div class="card">
-    <h2>Posts</h2>
-
-    <input type="text" id="title" placeholder="Title">
-    <input type="text" id="content" placeholder="Content">
-    <input type="text" id="userId" placeholder="User ID">
-    <button onclick="createPost()">Create Post</button>
-
-    <button onclick="fetchPosts()">Load Posts</button>
+    <h2>📝 Post Service</h2>
+    <div style="background:#f1f2f6; padding:10px; border-radius:5px; margin-bottom:15px; font-size:0.9em;">
+        <i>Protégé par JWT. Gère uniquement le contenu textuel des posts.</i>
+    </div>
+    <input type="text" id="title" placeholder="Titre (ex: Mon premier post)">
+    <input type="text" id="content" placeholder="Contenu du post">
+    <input type="text" id="userId" placeholder="ID Auteur (Copiez d'à côté)">
+    <button onclick="createPost()">Créer Post</button>
+    <button onclick="fetchPosts()" style="background:#95a5a6;">Rafraîchir Posts</button>
     <ul id="posts"></ul>
+  </div>
+
+  <!-- Feed Service -->
+  <div class="card" style="border: 2px solid #27ae60;">
+    <h2 style="color: #27ae60; border-bottom-color: #27ae60;">🚀 Feed Service (Aggregator)</h2>
+    <div style="background:#e8f8f5; padding:10px; border-radius:5px; margin-bottom:15px; font-size:0.9em; color:#16a085;">
+        <i>C'est la Magie ! L'API Gateway redirige ici. Ce service va fusionner les Posts + les Infos Users + les Commentaires !</i>
+    </div>
+    <button class="feed-btn" onclick="fetchFeed()">🌟 Charger le Fil d'Actualité Complet</button>
+    <ul id="feedList"></ul>
   </div>
 
 </div>
 
 <script>
 const BASE_URL = 'http://localhost:7000';
+let jwtToken = '';
 
+// Login Logic
+async function login() {
+    const email = document.getElementById('loginEmail').value;
+    if(!email) return alert('Veuillez entrer un email');
+
+    try {
+        const res = await fetch(`${BASE_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        
+        if(data.token) {
+            jwtToken = data.token;
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('app-section').style.display = 'block';
+            document.getElementById('main-grid').style.display = 'grid';
+            document.getElementById('token-display').innerText = jwtToken;
+            
+            // Auto-load data 
+            fetchUsers();
+            fetchPosts();
+        } else {
+            document.getElementById('login-error').innerText = "Erreur: Le Gateway n'a pas renvoyé de Token.";
+        }
+    } catch(err) {
+        document.getElementById('login-error').innerText = "Erreur de connexion (Avez-vous démarré le Gateway sur le port 7000 ?)";
+    }
+}
+
+function getAuthHeaders() {
+    return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${jwtToken}`
+    };
+}
+
+// Users Service API
 async function fetchUsers() {
-  const res = await fetch(`${BASE_URL}/users`);
-  const users = await res.json();
-
-  const list = document.getElementById("users");
-  list.innerHTML = "";
-
-  users.forEach(user => {
-    const li = document.createElement("li");
-    li.textContent = user.name + " - " + user.email;
-    list.appendChild(li);
-  });
+  try {
+      const res = await fetch(`${BASE_URL}/users`);
+      const users = await res.json();
+      const list = document.getElementById("users");
+      list.innerHTML = "";
+      users.forEach(user => {
+        list.innerHTML += `<li><strong>${user.name}</strong><br><small style="color:#7f8c8d; user-select:all;">ID: ${user._id}</small></li>`;
+      });
+  } catch(err) {
+      alert("Erreur lors du chargement des utilisateurs.");
+  }
 }
 
 async function createUser() {
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value;
-
+  if(!name || !email) return alert("Remplissez les champs");
+  
   await fetch(`${BASE_URL}/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, email })
   });
-
+  
+  document.getElementById("name").value = "";
+  document.getElementById("email").value = "";
   fetchUsers();
 }
 
+// Posts Service API (Requires Auth)
 async function fetchPosts() {
-  const res = await fetch(`${BASE_URL}/posts`);
-  const posts = await res.json();
-
-  const list = document.getElementById("posts");
-  list.innerHTML = "";
-
-  posts.forEach(post => {
-    const li = document.createElement("li");
-    li.textContent = post.title + " - " + post.content;
-    list.appendChild(li);
-  });
+  try {
+      const res = await fetch(`${BASE_URL}/posts`, { headers: getAuthHeaders() });
+      if(res.status === 401 || res.status === 403) throw new Error("Accès refusé. JWT manquant ou invalide.");
+      
+      const posts = await res.json();
+      const list = document.getElementById("posts");
+      list.innerHTML = "";
+      posts.forEach(post => {
+        list.innerHTML += `<li>
+            <strong>${post.title}</strong><br>
+            ${post.content}<br>
+            <small style="color:#7f8c8d;">Post ID: ${post._id}</small><br>
+            <small style="color:#7f8c8d;">User ID: ${post.userId}</small>
+        </li>`;
+      });
+  } catch(err) {
+      document.getElementById("posts").innerHTML = `<li style="color:red;">Erreur: ${err.message}</li>`;
+  }
 }
 
 async function createPost() {
   const title = document.getElementById("title").value;
   const content = document.getElementById("content").value;
   const userId = document.getElementById("userId").value;
+  if(!title || !userId) return alert("Titre et ID Utilisateur requis");
 
-  await fetch(`${BASE_URL}/posts`, {
+  const res = await fetch(`${BASE_URL}/posts`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ title, content, userId })
   });
-
+  
+  if(!res.ok) return alert("Erreur lors de la création du post (JWT valide ?)");
+  
+  document.getElementById("title").value = "";
+  document.getElementById("content").value = "";
   fetchPosts();
+}
+
+// Add comment Logic
+async function addComment(postId, userIdInputId, textInputId) {
+    const text = document.getElementById(textInputId).value;
+    const userId = document.getElementById(userIdInputId).value;
+    
+    if(!text || !userId) return alert("Veuillez remplir votre ID et le commentaire");
+
+    const res = await fetch(`${BASE_URL}/comments`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ text, postId, userId })
+    });
+    
+    if(res.ok) {
+        alert("Commentaire ajouté !");
+        fetchFeed(); // Refresh the feed!
+    } else {
+        alert("Erreur serveur lors de l'ajout du commentaire.");
+    }
+}
+
+// Feed Service API (Aggregator, Requires Auth)
+async function fetchFeed() {
+  try {
+      const btn = document.querySelector('.feed-btn');
+      btn.innerText = "⏳ Chargement de l'agrégation...";
+      
+      // Feed is protected by Gateway JWT
+      const res = await fetch(`${BASE_URL}/feed`, { headers: getAuthHeaders() });
+      if(res.status === 401 || res.status === 403) throw new Error("Accès refusé au Gateway (JWT invalide).");
+      if(!res.ok) throw new Error("Le Feed Service a retourné une erreur.");
+      
+      const feed = await res.json();
+      const list = document.getElementById("feedList");
+      list.innerHTML = "";
+      
+      if(feed.length === 0) list.innerHTML = "<li>Aucun post à afficher dans le feed. Créez un post d'abord !</li>";
+
+      feed.forEach((post, index) => {
+        let commentsHtml = '';
+        if(post.comments && post.comments.length > 0) {
+            post.comments.forEach(c => {
+                commentsHtml += `<div class="comment">💬 <b>User [${c.userId.substring(0,4)}...]</b>: ${c.text}</div>`;
+            });
+        }
+
+        list.innerHTML += `
+            <li style="border-left-color: #27ae60;">
+                <div style="font-size:1.1em; color:#2c3e50;"><strong>${post.title}</strong></div>
+                <div style="color:#27ae60; font-size:0.9em; margin-bottom:5px;">
+                    Posté par: <b>${post.author.name}</b> (${post.author.email || 'N/A'})
+                </div>
+                <div style="margin-bottom:10px; background:#fff; padding:10px; border-radius:4px; border:1px solid #ddd;">
+                    ${post.content}
+                </div>
+                
+                <div style="background:#f1f2f6; padding:10px; border-radius:4px;">
+                    <strong style="font-size:0.85em; color:#7f8c8d;">👇 Commentaires:</strong>
+                    ${commentsHtml}
+                    
+                    <div class="comment-input-area">
+                        <input type="text" id="com_user_${index}" placeholder="Ton ID User" style="flex:1;">
+                        <input type="text" id="com_text_${index}" placeholder="Cool !" style="flex:2;">
+                        <button class="small-btn" onclick="addComment('${post._id}', 'com_user_${index}', 'com_text_${index}')">Ajouter</button>
+                    </div>
+                </div>
+            </li>
+        `;
+      });
+      
+      btn.innerText = "🌟 Charger le Fil d'Actualité Complet";
+  } catch(err) {
+      alert("Erreur Feed: " + err.message);
+      document.querySelector('.feed-btn').innerText = "🌟 Charger le Fil d'Actualité Complet";
+  }
 }
 </script>
 
